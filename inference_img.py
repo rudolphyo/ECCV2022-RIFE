@@ -19,6 +19,8 @@ parser.add_argument('--ratio', default=0, type=float, help='inference ratio betw
 parser.add_argument('--rthreshold', default=0.02, type=float, help='returns image when actual ratio falls in given range threshold')
 parser.add_argument('--rmaxcycles', default=8, type=int, help='limit max number of bisectional cycles')
 parser.add_argument('--model', dest='modelDir', type=str, default='train_log', help='directory with trained model files')
+parser.add_argument('--save_dir', type=str)
+parser.add_argument('--start_ind', type=int)
 
 args = parser.parse_args()
 
@@ -104,8 +106,16 @@ else:
 
 if not os.path.exists('output'):
     os.mkdir('output')
+    
 for i in range(len(img_list)):
     if args.img[0].endswith('.exr') and args.img[1].endswith('.exr'):
-        cv2.imwrite('output/img{}.exr'.format(i), (img_list[i][0]).cpu().numpy().transpose(1, 2, 0)[:h, :w], [cv2.IMWRITE_EXR_TYPE, cv2.IMWRITE_EXR_TYPE_HALF])
+        cv2.imwrite(
+            'output/img{}.exr'.format(i),
+            (img_list[i][0]).cpu().numpy().transpose(1, 2, 0)[:h, :w], [cv2.IMWRITE_EXR_TYPE, cv2.IMWRITE_EXR_TYPE_HALF]
+        )
     else:
-        cv2.imwrite('output/img{}.png'.format(i), (img_list[i][0] * 255).byte().cpu().numpy().transpose(1, 2, 0)[:h, :w])
+        ind = args.start_ind + i
+        ind_str = str(ind).zfill(5)
+        save_path = f"{args.save_dir}/{ind_str}.png"
+
+        cv2.imwrite(save_path, (img_list[i][0] * 255).byte().cpu().numpy().transpose(1, 2, 0)[:h, :w])
